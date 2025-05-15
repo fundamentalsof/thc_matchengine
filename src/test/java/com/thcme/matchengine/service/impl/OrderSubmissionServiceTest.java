@@ -145,5 +145,67 @@ public class OrderSubmissionServiceTest {
 
     }
 
+    @Test
+    @DisplayName("Acceptance Criteria Scenario A First Order" )
+    public void testAcceptanceCriteriaScenarioA() {
+        // Test the order submission functionality
+
+        Order newOrderC1 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.SELL, 10000, 20250130, "User A");
+        Order order = orderSubmissionService.addOrder(newOrderC1);
+        Assertions.assertEquals(newOrderC1, order);
+    }
+
+    @Test
+    @DisplayName("Acceptance Criteria Scenario A Second Order" )
+    public void testAcceptanceCriteriaScenarioASecondOrder() {
+        // Test the second order submission functionality
+
+        Order newOrder1 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.SELL, 10000, 20250130, "User A");
+        Order order = orderSubmissionService.addOrder(newOrder1);
+
+        Order newOrder2 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.BUY, 5000, 20250130, "User A");
+        Order order2 = orderSubmissionService.addOrder(newOrder2);
+        Assertions.assertEquals(order2.getDirection(), Order.Direction.SELL);
+        Assertions.assertEquals(order2.getCurrencyPair(), "EURUSD");
+        Assertions.assertEquals(order2.getDealtCurrency(), "USD");
+        Assertions.assertEquals(order2.getValueDate(), 20250130);
+        Assertions.assertEquals(order2.getUserId(), "User A");
+        Assertions.assertEquals(order2.getAmount(), 5000);
+        
+    }
+
+
+    @Test
+    @DisplayName("Acceptance Criteria Scenario A Third Order" )
+    public void testAcceptanceCriteriaScenarioAThirdOrder() {
+        // Test the order submission functionality
+
+
+        Order newOrder1 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.SELL, 10000, 20250130, "User A");
+        Order order = orderSubmissionService.addOrder(newOrder1);
+
+        Order newOrder2 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.BUY, 5000, 20250130, "User A");
+        Order order2 = orderSubmissionService.addOrder(newOrder2);
+
+        Order newOrder3 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.BUY, 5000, 20250130, "User B");
+        Order order3 = orderSubmissionService.addOrder(newOrder3);
+        Assertions.assertEquals(newOrder3, order3);
+    }
+
+
+
+
 
 }
