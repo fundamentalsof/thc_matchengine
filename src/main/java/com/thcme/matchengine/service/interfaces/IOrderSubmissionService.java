@@ -10,4 +10,6 @@ public interface IOrderSubmissionService {
      * @return Aggregated / Netted Order for the user submitting the order
      */
     public Order addOrder(Order order);
+    
+    public void reset();
 }

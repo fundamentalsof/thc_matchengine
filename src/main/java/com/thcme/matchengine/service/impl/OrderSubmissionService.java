@@ -23,4 +23,8 @@ public class OrderSubmissionService implements IOrderSubmissionService {
         return orderBookContext.addOrder(order);
     }
     
+    public void reset(){
+        orderContext.clear();
+    } 
+    
 }
