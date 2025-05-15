@@ -1,6 +1,9 @@
 package com.thcme.matchengine.service.impl;
 
 import com.thcme.matchengine.datamodel.Order;
+import com.thcme.matchengine.datamodel.OrderBookContext;
+import com.thcme.matchengine.datamodel.OrderKey;
+import com.thcme.matchengine.service.interfaces.IOrderBookContextService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -14,6 +17,9 @@ public class OrderSubmissionServiceTest {
    
     @Autowired  
     IOrderSubmissionService orderSubmissionService;
+    
+    @Autowired
+    IOrderBookContextService orderBookContextService;
     
     //setup
     @BeforeEach
@@ -142,6 +148,39 @@ public class OrderSubmissionServiceTest {
         Order order2 = orderSubmissionService.addOrder(newOrderC2);
         Assertions.assertEquals(order2.getAmount(), 500);
         Assertions.assertEquals(order2.getDirection(), Order.Direction.BUY);
+
+        OrderKey orderKey = new OrderKey("EURUSD", "USD",   2);
+
+        OrderBookContext context = orderBookContextService.getOrderBookContext(orderKey);
+        Assertions.assertEquals(context.isUserPresent("user123"), true);
+        Assertions.assertEquals(context.isUserPresentInSellMap("user123"), false);
+        Assertions.assertEquals(context.isUserPresentInBuyMap("user123"), true);
+
+    }
+
+
+    @Test
+    @DisplayName("Test Two adds Swap Sides SELL To BUY ZERO FLAT" )
+    public void testTwoAddsSwapSidesSellToBuyZEROFlat() {
+        // Test the order submission functionality
+
+        Order newOrderC1 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.SELL, 1000, 2, "user123");
+        Order order = orderSubmissionService.addOrder(newOrderC1);
+        Assertions.assertEquals(newOrderC1, order);
+
+        Order newOrderC2 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.BUY, 1000, 2, "user123");
+        Order order2 = orderSubmissionService.addOrder(newOrderC2);
+        Assertions.assertEquals(order2.getAmount(), 0);
+        Assertions.assertEquals(order2.getDirection(), Order.Direction.SELL);
+        
+        OrderKey orderKey = new OrderKey("EURUSD", "USD",   2);
+                
+        OrderBookContext context = orderBookContextService.getOrderBookContext(orderKey);
+        Assertions.assertEquals(context.isUserPresent("user123"), false);
 
     }
 

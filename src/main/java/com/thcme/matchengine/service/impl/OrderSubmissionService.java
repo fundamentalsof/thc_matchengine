@@ -76,7 +76,11 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                         Order.Direction.BUY,
                         amount, order.getValueDate(),
                         order.getUserId());
-                buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                if (amount == 0) {
+                    buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+                } else {
+                    buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                }
             }
         }
         return aggregatedOrder;
@@ -124,7 +128,11 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                         Order.Direction.SELL,
                         amount, order.getValueDate(),
                         order.getUserId());
-                sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                if (amount == 0) {
+                    sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+                } else {
+                    sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                }
             }
         }
         return aggregatedOrder;
