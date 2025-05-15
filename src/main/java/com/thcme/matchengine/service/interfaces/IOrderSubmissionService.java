@@ -1,4 +1,4 @@
-package com.thcme.matchengine.service;
+package com.thcme.matchengine.service.interfaces;
 
 import com.thcme.matchengine.datamodel.Order;
 

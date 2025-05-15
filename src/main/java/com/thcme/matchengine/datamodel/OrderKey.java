@@ -2,20 +2,13 @@ package com.thcme.matchengine.datamodel;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 @Data
 @AllArgsConstructor
-public class Order {
+@EqualsAndHashCode
+public class OrderKey {
     private String currencyPair;
     private String dealtCurrency;
-    private Direction direction;
-    private double amount;
     private int valueDate;
-    private String userId;
-
-    public enum Direction {
-        BUY,
-        SELL;
-    }
-
 }
-
