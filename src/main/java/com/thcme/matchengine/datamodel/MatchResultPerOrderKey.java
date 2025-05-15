@@ -2,15 +2,15 @@ package com.thcme.matchengine.datamodel;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode
-public class OrderKey {
+public class MatchResultPerOrderKey {
     private String currencyPair;
     private String dealtCurrency;
     private int valueDate;
+    String userId;
+    double  matchedPositionAsPercentage;
 }
