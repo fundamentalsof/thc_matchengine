@@ -15,5 +15,17 @@ public class OrderBookContext {
         this.orderKey = orderKey;
     }
     
+    public boolean isUserPresent(String userId) {
+        return buyMapOfUserIdsToAggregatedOrders.containsKey(userId) || sellMapOfUserIdsToAggregatedOrders.containsKey(userId);
+    }
+    public boolean isUserPresentInBuyMap(String userId) {
+        return buyMapOfUserIdsToAggregatedOrders.containsKey(userId);
+    }
+    public boolean isUserPresentInSellMap(String userId) {
+        return sellMapOfUserIdsToAggregatedOrders.containsKey(userId);
+    }
+    
+    
+    
     
 }
