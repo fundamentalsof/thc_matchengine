@@ -13,13 +13,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class OrderSubmissionServiceTest {
    
     @Autowired  
-    IOrderSubmissionService orderSumissionService;
+    IOrderSubmissionService orderSubmissionService;
     
     //setup
     @BeforeEach
     public void setup() {
         // Initialize the order submission service or any other dependencies
-        orderSumissionService.reset();
+        orderSubmissionService.reset();
         
     }
     // teardown
@@ -32,7 +32,7 @@ public class OrderSubmissionServiceTest {
         Order newOrder = new Order(
                 "EURUSD", "USD", 
                 Order.Direction.BUY, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrder);
+        Order order = orderSubmissionService.addOrder(newOrder);
         Assertions.assertEquals(newOrder, order);
         
     }
@@ -44,7 +44,7 @@ public class OrderSubmissionServiceTest {
         Order newOrder = new Order(
                 "EURUSD", "USD",
                 Order.Direction.SELL, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrder);
+        Order order = orderSubmissionService.addOrder(newOrder);
         Assertions.assertEquals(newOrder, order);
 
     }
@@ -58,8 +58,8 @@ public class OrderSubmissionServiceTest {
         Order newOrder = new Order(
                 "EURUSD", "USD",
                 Order.Direction.BUY, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrder);
-        Order newerOrder = orderSumissionService.addOrder(order);
+        Order order = orderSubmissionService.addOrder(newOrder);
+        Order newerOrder = orderSubmissionService.addOrder(order);
         
         Assertions.assertEquals(newerOrder.getAmount(),
                 order.getAmount()+order.getAmount());
@@ -75,8 +75,8 @@ public class OrderSubmissionServiceTest {
         Order newOrder = new Order(
                 "EURUSD", "USD",
                 Order.Direction.SELL, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrder);
-        Order newerOrder = orderSumissionService.addOrder(order);
+        Order order = orderSubmissionService.addOrder(newOrder);
+        Order newerOrder = orderSubmissionService.addOrder(order);
 
         Assertions.assertEquals(newerOrder.getAmount(),
                 order.getAmount()+order.getAmount());
@@ -92,13 +92,13 @@ public class OrderSubmissionServiceTest {
         Order newOrderC1 = new Order(
                 "EURUSD", "USD",
                 Order.Direction.SELL, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrderC1);
+        Order order = orderSubmissionService.addOrder(newOrderC1);
         Assertions.assertEquals(newOrderC1, order);
 
         Order newOrderC2 = new Order(
                 "USDJPY", "USD",
                 Order.Direction.SELL, 1000, 2, "user123");
-        Order order2 = orderSumissionService.addOrder(newOrderC2);
+        Order order2 = orderSubmissionService.addOrder(newOrderC2);
         Assertions.assertEquals(newOrderC2, order2);
 
     }
@@ -112,13 +112,13 @@ public class OrderSubmissionServiceTest {
         Order newOrderC1 = new Order(
                 "EURUSD", "USD",
                 Order.Direction.BUY, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrderC1);
+        Order order = orderSubmissionService.addOrder(newOrderC1);
         Assertions.assertEquals(newOrderC1, order);
 
         Order newOrderC2 = new Order(
                 "EURUSD", "USD",
                 Order.Direction.SELL, 1500, 2, "user123");
-        Order order2 = orderSumissionService.addOrder(newOrderC2);
+        Order order2 = orderSubmissionService.addOrder(newOrderC2);
         Assertions.assertEquals(order2.getAmount(), 500);
         Assertions.assertEquals(order2.getDirection(), Order.Direction.SELL);
 
@@ -133,13 +133,13 @@ public class OrderSubmissionServiceTest {
         Order newOrderC1 = new Order(
                 "EURUSD", "USD",
                 Order.Direction.SELL, 1000, 2, "user123");
-        Order order = orderSumissionService.addOrder(newOrderC1);
+        Order order = orderSubmissionService.addOrder(newOrderC1);
         Assertions.assertEquals(newOrderC1, order);
 
         Order newOrderC2 = new Order(
                 "EURUSD", "USD",
                 Order.Direction.BUY, 1500, 2, "user123");
-        Order order2 = orderSumissionService.addOrder(newOrderC2);
+        Order order2 = orderSubmissionService.addOrder(newOrderC2);
         Assertions.assertEquals(order2.getAmount(), 500);
         Assertions.assertEquals(order2.getDirection(), Order.Direction.BUY);
 
