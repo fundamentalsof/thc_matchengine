@@ -10,7 +10,7 @@ import com.thcme.matchengine.service.interfaces.IOrderSubmissionService;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-public class OrderSumissionServiceTest {
+public class OrderSubmissionServiceTest {
    
     @Autowired  
     IOrderSubmissionService orderSumissionService;
@@ -104,7 +104,46 @@ public class OrderSumissionServiceTest {
     }
 
 
+    @Test
+    @DisplayName("Test Two adds Swap Sides BUY TO SELL")
+    public void testTwoAddsSwapSidesBuyToSell() {
+        // Test the order submission functionality
 
+        Order newOrderC1 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.BUY, 1000, 2, "user123");
+        Order order = orderSumissionService.addOrder(newOrderC1);
+        Assertions.assertEquals(newOrderC1, order);
+
+        Order newOrderC2 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.SELL, 1500, 2, "user123");
+        Order order2 = orderSumissionService.addOrder(newOrderC2);
+        Assertions.assertEquals(order2.getAmount(), 500);
+        Assertions.assertEquals(order2.getDirection(), Order.Direction.SELL);
+
+    }
+
+
+    @Test
+    @DisplayName("Test Two adds Swap Sides SELL To BUY" )
+    public void testTwoAddsSwapSidesSellToBuy() {
+        // Test the order submission functionality
+
+        Order newOrderC1 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.SELL, 1000, 2, "user123");
+        Order order = orderSumissionService.addOrder(newOrderC1);
+        Assertions.assertEquals(newOrderC1, order);
+
+        Order newOrderC2 = new Order(
+                "EURUSD", "USD",
+                Order.Direction.BUY, 1500, 2, "user123");
+        Order order2 = orderSumissionService.addOrder(newOrderC2);
+        Assertions.assertEquals(order2.getAmount(), 500);
+        Assertions.assertEquals(order2.getDirection(), Order.Direction.BUY);
+
+    }
 
 
 }

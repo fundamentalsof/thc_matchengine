@@ -51,7 +51,7 @@ public class OrderBookContext {
                     buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
                     aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
                             Order.Direction.SELL,
-                            -amount, order.getValueDate(),
+                            amount, order.getValueDate(),
                             order.getUserId());
                     sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
                 }
@@ -95,7 +95,7 @@ public class OrderBookContext {
                     sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
                     aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
                             Order.Direction.BUY,
-                            -amount, order.getValueDate(),
+                            amount, order.getValueDate(),
                             order.getUserId());
                     buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
                 }
