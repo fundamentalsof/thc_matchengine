@@ -50,6 +50,7 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                     order.getAmount(), order.getValueDate(),
                     order.getUserId());
             sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+            orderBookContext.pushSellOrder(aggregatedOrder);
         }
         else if (existingOrder != null) {
             // existing order, Aggregate SELLS
@@ -58,6 +59,7 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                     existingOrder.getAmount() + order.getAmount(), order.getValueDate(),
                     order.getUserId());
             sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+            orderBookContext.pushSellOrder(aggregatedOrder);
         }
         else { //existingOppositeOrder != null, Aggregate SELL and BUY, see the result and 
             // shift sides if needed
@@ -65,11 +67,13 @@ public class OrderSubmissionService implements IOrderSubmissionService {
             if (amount < 0) { //Shift sides
                 amount = -amount;
                 buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+                orderBookContext.removeBuyOrder(existingOppositeOrder);
                 aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
                         Order.Direction.SELL,
                         amount, order.getValueDate(),
                         order.getUserId());
                 sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                orderBookContext.pushSellOrder(aggregatedOrder);
             }
             else { // amount >= 0, We stick to buy side as it had a greater amount
                 aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
@@ -78,8 +82,10 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                         order.getUserId());
                 if (amount == 0) {
                     buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+                    orderBookContext.removeBuyOrder(existingOppositeOrder);
                 } else {
                     buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                    orderBookContext.pushBuyOrder(aggregatedOrder);
                 }
             }
         }
@@ -102,6 +108,8 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                     order.getAmount(), order.getValueDate(),
                     order.getUserId());
             buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+            orderBookContext.pushBuyOrder(aggregatedOrder);
+            
             return aggregatedOrder;
         }
         else if (existingOrder != null) {
@@ -111,17 +119,20 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                     existingOrder.getAmount() + order.getAmount(), order.getValueDate(),
                     order.getUserId());
             buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+            orderBookContext.pushBuyOrder(aggregatedOrder);
         } else { //existingOppositeOrder != null, Aggregate BUY and SELL, see the result and 
             // shift sides if needed
             double amount =   existingOppositeOrder.getAmount() - order.getAmount();
             if (amount < 0) { //Shift sides to SELL
                 amount = -amount;
                 sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+                orderBookContext.removeSellOrder(existingOppositeOrder);
                 aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
                         Order.Direction.BUY,
                         amount, order.getValueDate(),
                         order.getUserId());
                 buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                orderBookContext.pushBuyOrder(aggregatedOrder);
             }
             else { // amount >= 0, We stick to Sell  side as it had a greater amount
                 aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
@@ -130,8 +141,10 @@ public class OrderSubmissionService implements IOrderSubmissionService {
                         order.getUserId());
                 if (amount == 0) {
                     sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+                    orderBookContext.removeSellOrder(existingOppositeOrder);
                 } else {
                     sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
+                    orderBookContext.pushSellOrder(aggregatedOrder);
                 }
             }
         }
