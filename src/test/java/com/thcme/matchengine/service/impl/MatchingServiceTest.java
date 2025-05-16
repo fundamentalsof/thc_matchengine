@@ -73,6 +73,8 @@ public class MatchingServiceTest {
         // Check that the matched positions are as expected
         Assertions.assertNotNull(matchResult, "Match result should not be null");
         Assertions.assertEquals(1, matchResult.getMatchedPositions().size(), "Matched orders should contain one position");
+        Assertions.assertNotNull(matchResultOther, "Match result should not be null");
+        Assertions.assertEquals(1, matchResultOther.getMatchedPositions().size(), "Matched orders should contain one position");
     }
 
     @Test
