@@ -11,6 +11,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class OverallMatchResult {
     private List<MatchResultPerOrderKey> matchedPositions;
 }
