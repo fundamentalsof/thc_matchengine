@@ -32,8 +32,8 @@ public class MatchingService implements IMatchingService {
         contexts.stream().forEach(context -> {
             AtomicReference<Double> matchedOrdersOthers = new AtomicReference<>(0.0);
             AtomicReference<Double> matchedOrdersUser = new AtomicReference<>(0.0);
-            double appetite = matchedOrdersUser.get() + matchedOrdersOthers.get();
             double supply = 0;
+            double appetite = 0;
 
             synchronized (context) {
 
@@ -50,6 +50,7 @@ public class MatchingService implements IMatchingService {
                         matchedOrdersOthers.updateAndGet(v -> v + order.getAmount());
                     }
                 }
+                appetite = matchedOrdersUser.get() + matchedOrdersOthers.get();
                 Map<String, Order> aggregatedOrders = isBuy
                         ? context.getSellMapOfUserIdsToAggregatedOrders()
                         : context.getBuyMapOfUserIdsToAggregatedOrders();

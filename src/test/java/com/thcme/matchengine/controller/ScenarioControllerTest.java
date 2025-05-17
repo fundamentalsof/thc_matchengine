@@ -1,5 +1,7 @@
 package com.thcme.matchengine.controller;
 
+import com.thcme.matchengine.service.interfaces.IOrderBookContextService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,6 +20,16 @@ public class ScenarioControllerTest {
     
     @Autowired
     private MockMvc mockMvc;
+    
+    @Autowired 
+    private IOrderBookContextService orderBookContextService;
+    
+    @BeforeEach
+    public void setUp() {
+        // Clear the order book context before each test
+        orderBookContextService.reset();
+    }
+            
     String payloadA = """
                 {
                  "currencyPair": "EURUSD",
@@ -49,7 +61,7 @@ public class ScenarioControllerTest {
             mockMvc.perform(post("/addOrder")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(payloadB));
-
+            
             mockMvc.perform(MockMvcRequestBuilders.get("/matchPositions/UserA"))
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(MockMvcResultMatchers.content().string(containsString("100.0")));
