@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.Random;
+
 @SpringBootTest
 public class MatchingServiceBenchmarkTest {
     @Autowired
@@ -38,7 +40,14 @@ public class MatchingServiceBenchmarkTest {
             matchingService.getMatchedPositions("user123");
         }
         orderBookContextService.reset();
+        Random random = new Random();
         for (int i = 0; i < 1_000_000; i++) {
+            orderA = new Order("EURUSD", "USD",
+                    Order.Direction.BUY, Math.abs(random.nextInt(1000))*10.0d, 20200101
+                , "user123");
+            orderB = new Order("EURUSD", "USD",
+                    Order.Direction.SELL, Math.abs(random.nextInt(1000))*10.0d, 20200101, "user456");
+
             orderSubmissionService.addOrder(orderA);
             orderSubmissionService.addOrder(orderB);
 
