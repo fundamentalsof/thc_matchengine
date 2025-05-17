@@ -23,10 +23,12 @@ public class OrderSubmissionService implements IOrderSubmissionService {
     }
 
     private Order addOrderInternal(final Order order, OrderBookContext orderBookContext) {
-        if (order.getDirection() == Order.Direction.BUY) {
-            return doBuySideLogic(order, orderBookContext);
-        } else { //sell
-            return doSellSideLogic(order, orderBookContext);
+        synchronized (orderBookContext) {
+            if (order.getDirection() == Order.Direction.BUY) {
+                return doBuySideLogic(order, orderBookContext);
+            } else { //sell
+                return doSellSideLogic(order, orderBookContext);
+            }
         }
     }
 

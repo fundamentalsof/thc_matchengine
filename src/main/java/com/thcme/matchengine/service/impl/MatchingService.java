@@ -32,38 +32,39 @@ public class MatchingService implements IMatchingService {
         contexts.stream().forEach(context -> {
             AtomicReference<Double> matchedOrdersOthers = new AtomicReference<>(0.0);
             AtomicReference<Double> matchedOrdersUser = new AtomicReference<>(0.0);
-
-            boolean isBuy = context.isUserPresentInBuyMap(userid);
-            List<Order> orders = isBuy
-                    ? context.getBuyListAcrossAllParticipants()
-                    : context.getSellListAcrossAllParticipants();
-
-            for (Order order : orders) {
-                if (order.getUserId().equals(userid)) {
-                    matchedOrdersUser.updateAndGet(v -> v + order.getAmount());
-                    break;
-                } else {
-                    matchedOrdersOthers.updateAndGet(v -> v + order.getAmount());
-                }
-            }
-
             double appetite = matchedOrdersUser.get() + matchedOrdersOthers.get();
             double supply = 0;
 
-            Map<String, Order> aggregatedOrders = isBuy
-                    ? context.getSellMapOfUserIdsToAggregatedOrders()
-                    : context.getBuyMapOfUserIdsToAggregatedOrders();
+            synchronized (context) {
 
-            for (Map.Entry<String, Order> entry : aggregatedOrders.entrySet()) {
-                if (entry.getKey().equals(userid)) {
-                    continue;
+                boolean isBuy = context.isUserPresentInBuyMap(userid);
+                List<Order> orders = isBuy
+                        ? context.getBuyListAcrossAllParticipants()
+                        : context.getSellListAcrossAllParticipants();
+
+                for (Order order : orders) {
+                    if (order.getUserId().equals(userid)) {
+                        matchedOrdersUser.updateAndGet(v -> v + order.getAmount());
+                        break;
+                    } else {
+                        matchedOrdersOthers.updateAndGet(v -> v + order.getAmount());
+                    }
                 }
-                Order order = entry.getValue();
-                if (order != null) {
-                    supply += order.getAmount();
-                }
-                if (supply >= appetite) {
-                    break;
+                Map<String, Order> aggregatedOrders = isBuy
+                        ? context.getSellMapOfUserIdsToAggregatedOrders()
+                        : context.getBuyMapOfUserIdsToAggregatedOrders();
+
+                for (Map.Entry<String, Order> entry : aggregatedOrders.entrySet()) {
+                    if (entry.getKey().equals(userid)) {
+                        continue;
+                    }
+                    Order order = entry.getValue();
+                    if (order != null) {
+                        supply += order.getAmount();
+                    }
+                    if (supply >= appetite) {
+                        break;
+                    }
                 }
             }
             
