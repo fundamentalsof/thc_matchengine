@@ -26,4 +26,13 @@ public class MatchingControllerTest {
                 .andExpect(MockMvcResultMatchers.content().string(containsString("[]")));
             
     }
+
+    @Test
+    public void testMatchingControllerPing() throws Exception {
+        // Test the matching controller
+        mockMvc.perform(MockMvcRequestBuilders.get("/ping"))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andExpect(MockMvcResultMatchers.content().string(containsString("Pong")));
+
+    }
 }
