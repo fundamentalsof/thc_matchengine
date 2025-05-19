@@ -51,17 +51,9 @@ public class MatchingService implements IMatchingService {
                     }
                 }
                 appetite = matchedOrdersUser.get() + matchedOrdersOthers.get();
-                Map<String, Order> aggregatedOrders = isBuy
-                        ? context.getSellMapOfUserIdsToAggregatedOrders()
-                        : context.getBuyMapOfUserIdsToAggregatedOrders();
-
-                for (Map.Entry<String, Order> entry : aggregatedOrders.entrySet()) {
-                    Order order = entry.getValue();
-                        supply += order.getAmount();
-                    if (supply >= appetite) {
-                        break;
-                    }
-                }
+                supply = isBuy
+                        ? context.getCumulativeSellAmount()
+                        : context.getCumulativeBuyAmount();
             }
             
             if (supply == 0 || matchedOrdersOthers.get() >= supply) {

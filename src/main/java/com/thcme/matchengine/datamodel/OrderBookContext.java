@@ -1,12 +1,10 @@
 package com.thcme.matchengine.datamodel;
 
 import lombok.Data;
-import lombok.Generated;
 import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -22,6 +20,8 @@ public class OrderBookContext {
     private List<Order> sellListAcrossAllParticipants = new ArrayList();
     private List<Order> buyListAcrossAllParticipants = new ArrayList();
     
+    private double cumulativeBuyAmount = 0;
+    private double cumulativeSellAmount = 0;
 
     public OrderBookContext(OrderKey orderKey) {
         this.orderKey = orderKey;
@@ -40,24 +40,31 @@ public class OrderBookContext {
         List<Order> orderInList = sellListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
-            sellListAcrossAllParticipants.remove(orderInList.get(0));
+            Order existing =  orderInList.get(0);
+            cumulativeSellAmount -= existing.getAmount();
+            
+            sellListAcrossAllParticipants.remove(existing);
             sellListAcrossAllParticipants.add(order);
         }
         else{
             sellListAcrossAllParticipants.add(order);
         }
+        cumulativeSellAmount += order.getAmount();
     }
     private void pushBuyOrder(Order order) {
         buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), order);
         List<Order> orderInList = buyListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
-            buyListAcrossAllParticipants.remove(orderInList.get(0));
+            Order existing =  orderInList.get(0);
+            cumulativeBuyAmount -= existing.getAmount();
+            buyListAcrossAllParticipants.remove(existing);
             buyListAcrossAllParticipants.add(order);
         }
         else{
             buyListAcrossAllParticipants.add(order);
         }
+        cumulativeBuyAmount += order.getAmount();
     }
 
     private  void removeSellOrder(Order order) {
@@ -66,18 +73,25 @@ public class OrderBookContext {
         List<Order> orderInList = sellListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
-            sellListAcrossAllParticipants.remove(orderInList.get(0));
+            if (sellListAcrossAllParticipants.remove(orderInList.get(0))) {
+                cumulativeSellAmount -= order.getAmount();        
+            }
             
         }
+        
     }
     private  void removeBuyOrder(Order order) {
         buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
         List<Order> orderInList = buyListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
-            buyListAcrossAllParticipants.remove(orderInList.get(0));
+            if (buyListAcrossAllParticipants.remove(orderInList.get(0))) {
+                cumulativeBuyAmount -= order.getAmount();        
+            }
         }
+        
     }
+    
 
     public void removeOrder(Order order) {
         if (order.getDirection() == Order.Direction.BUY) {
