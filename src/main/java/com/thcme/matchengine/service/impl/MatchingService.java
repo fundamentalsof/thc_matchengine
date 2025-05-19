@@ -11,9 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Service
 public class MatchingService implements IMatchingService {
@@ -30,33 +27,23 @@ public class MatchingService implements IMatchingService {
          }
          // logic to match positions
         contexts.stream().forEach(context -> {
-            AtomicReference<Double> matchedOrdersOthers = new AtomicReference<>(0.0);
-            AtomicReference<Double> matchedOrdersUser = new AtomicReference<>(0.0);
+            double matchedOrdersOthers = 0.0;
+            double matchedOrdersUser = 0.0;
             double supply = 0;
-            double appetite = 0;
+            double totalAppetite = 0;
 
             synchronized (context) {
-
-                boolean isBuy = context.isUserPresentInBuyMap(userid);
-                List<Order> orders = isBuy
-                        ? context.getBuyListAcrossAllParticipants()
-                        : context.getSellListAcrossAllParticipants();
-
-                for (Order order : orders) {
-                    if (order.getUserId().equals(userid)) {
-                        matchedOrdersUser.updateAndGet(v -> v + order.getAmount());
-                        break;
-                    } else {
-                        matchedOrdersOthers.updateAndGet(v -> v + order.getAmount());
-                    }
-                }
-                appetite = matchedOrdersUser.get() + matchedOrdersOthers.get();
-                supply = isBuy
+                
+                totalAppetite = context.getCumulativeAppetiteInclusive(userid);
+                matchedOrdersOthers = context.getCumulativeAppetiteExclusive(userid);
+                matchedOrdersUser = totalAppetite - matchedOrdersOthers;
+                Order.Direction userOrderDirection = context.getUserDirection(userid);
+                supply = userOrderDirection == Order.Direction.BUY 
                         ? context.getCumulativeSellAmount()
                         : context.getCumulativeBuyAmount();
             }
             
-            if (supply == 0 || matchedOrdersOthers.get() >= supply) {
+            if (supply == 0 || matchedOrdersOthers >= supply) {
                 MatchResultPerOrderKey matchResultPerOrderKey = new MatchResultPerOrderKey(
                         context.getOrderKey().getCurrencyPair(),
                         context.getOrderKey().getDealtCurrency(),
@@ -72,8 +59,8 @@ public class MatchingService implements IMatchingService {
                         context.getOrderKey().getDealtCurrency(),
                         context.getOrderKey().getValueDate(),
                         userid,
-                        supply >= appetite ? 100:
-                                (supply-matchedOrdersOthers.get())*100/matchedOrdersUser.get()
+                        supply >= totalAppetite ? 100:
+                                (supply-matchedOrdersOthers)*100/matchedOrdersUser
                 );
                 matchedOrders.add(matchResultPerOrderKey);
             }
