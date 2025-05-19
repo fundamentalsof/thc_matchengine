@@ -56,13 +56,8 @@ public class MatchingService implements IMatchingService {
                         : context.getBuyMapOfUserIdsToAggregatedOrders();
 
                 for (Map.Entry<String, Order> entry : aggregatedOrders.entrySet()) {
-                    if (entry.getKey().equals(userid)) {
-                        continue;
-                    }
                     Order order = entry.getValue();
-                    if (order != null) {
                         supply += order.getAmount();
-                    }
                     if (supply >= appetite) {
                         break;
                     }
