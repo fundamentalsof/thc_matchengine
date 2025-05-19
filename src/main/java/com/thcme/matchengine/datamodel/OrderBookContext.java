@@ -1,8 +1,11 @@
 package com.thcme.matchengine.datamodel;
 
 import lombok.Data;
+import lombok.Generated;
+import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +13,7 @@ import java.util.HashMap;
 import java.util.stream.Collectors;
 
 @Data
+@Getter
 public class OrderBookContext {
     private OrderKey orderKey;
     private Map<String, Order> buyMapOfUserIdsToAggregatedOrders  = new HashMap<>();
@@ -23,7 +27,15 @@ public class OrderBookContext {
         this.orderKey = orderKey;
     }
     
-    public void pushBuyOrder(Order order) {
+    public void pushOrder(Order order) {
+        if (order.getDirection() == Order.Direction.BUY) {
+            pushBuyOrder(order);
+        } else {
+            pushSellOrder(order);
+        }
+    }
+    private void pushBuyOrder(Order order) {
+        buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), order);
         List<Order> orderInList = buyListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
@@ -34,7 +46,8 @@ public class OrderBookContext {
             buyListAcrossAllParticipants.add(order);
         }
     }
-    public void pushSellOrder(Order order) {
+    private void pushSellOrder(Order order) {
+        sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), order);
         List<Order> orderInList = sellListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
@@ -46,7 +59,9 @@ public class OrderBookContext {
         }
     }
 
-    public void removeSellOrder(Order order) {
+    private  void removeSellOrder(Order order) {
+        sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
+        
         List<Order> orderInList = sellListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
@@ -55,7 +70,23 @@ public class OrderBookContext {
         }
     }
 
-    public void removeBuyOrder(Order order) {
+    public void removeOrder(Order order) {
+        if (order.getDirection() == Order.Direction.BUY) {
+            removeBuyOrder(order);
+        } else {
+            removeSellOrder(order);
+        }
+    }
+
+    public void removeOrderFromOtherSide(Order order) {
+        if (order.getDirection() == Order.Direction.BUY) {
+            removeSellOrder(order);
+        } else {
+            removeBuyOrder(order);
+        }
+    }
+    private  void removeBuyOrder(Order order) {
+        buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
         List<Order> orderInList = buyListAcrossAllParticipants.stream().
                 filter(o -> o.getUserId().equals(order.getUserId())).collect(Collectors.toList());
         if (orderInList.size() > 0) {
@@ -71,6 +102,27 @@ public class OrderBookContext {
     }
     public boolean isUserPresentInSellMap(String userId) {
         return sellMapOfUserIdsToAggregatedOrders.containsKey(userId);
+    }
+
+
+    
+    public Map<String, Order> getBuyMapOfUserIdsToAggregatedOrders() {
+        return Collections.unmodifiableMap(buyMapOfUserIdsToAggregatedOrders);
+    }
+
+    
+    public Map<String, Order> getSellMapOfUserIdsToAggregatedOrders() {
+        return Collections.unmodifiableMap(sellMapOfUserIdsToAggregatedOrders);
+    }
+
+    
+    public List<Order> getSellListAcrossAllParticipants() {
+        return Collections.unmodifiableList(sellListAcrossAllParticipants);
+    }
+
+    
+    public List<Order> getBuyListAcrossAllParticipants() {
+        return Collections.unmodifiableList(buyListAcrossAllParticipants);
     }
     
     
