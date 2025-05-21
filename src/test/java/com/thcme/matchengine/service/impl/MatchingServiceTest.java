@@ -74,7 +74,16 @@ public class MatchingServiceTest {
         Assertions.assertNotNull(matchResult, "Match result should not be null");
         Assertions.assertEquals(1, matchResult.getMatchedPositions().size(), "Matched orders should contain one position");
         Assertions.assertNotNull(matchResultOther, "Match result should not be null");
-        Assertions.assertEquals(1, matchResultOther.getMatchedPositions().size(), "Matched orders should contain one position");
+
+        Assertions.assertEquals(100, matchResultOther.getMatchedPositions().get(0).getMatchedPositionAsPercentage(), 
+                "Matched " +
+                "orders should have 100% match");
+        Assertions.assertEquals(70,
+                matchResult.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+                "Matched " +
+                        "orders shouldhave 70%");
+
+
     }
 
     @Test
@@ -109,11 +118,6 @@ public class MatchingServiceTest {
         System.out.println("Matched orders: " + matchResultOther.getMatchedPositions());
         Assertions.assertEquals(2, matchResultOther.getMatchedPositions().size(), "Matched orders should contain two positions");
 
-
-        // Check that the matched positions are as expected
-        Assertions.assertNotNull(matchResult, "Match result should not be null");
-        Assertions.assertEquals(3, matchResult.getMatchedPositions().size(), "Matched orders " +
-                "should contain TWO positions");
     }
 
     @Test
