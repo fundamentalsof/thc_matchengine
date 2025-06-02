@@ -230,11 +230,13 @@ public class OrderSubmissionServiceTest {
                 "EURUSD", "USD",
                 Order.Direction.SELL, 10000, 20250130, "User A");
         Order order = orderSubmissionService.addOrder(newOrder1);
+        Assertions.assertEquals(newOrder1, order);        
 
         Order newOrder2 = new Order(
                 "EURUSD", "USD",
                 Order.Direction.BUY, 5000, 20250130, "User A");
         Order order2 = orderSubmissionService.addOrder(newOrder2);
+        Assertions.assertEquals(order2.getDirection(), Order.Direction.SELL);
 
         Order newOrder3 = new Order(
                 "EURUSD", "USD",

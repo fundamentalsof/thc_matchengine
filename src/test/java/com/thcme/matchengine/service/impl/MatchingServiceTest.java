@@ -49,6 +49,14 @@ public class MatchingServiceTest {
         // Check that the matched positions are as expected
         Assertions.assertNotNull(matchResult, "Match result should not be null");
         Assertions.assertEquals(1, matchResult.getMatchedPositions().size(), "Matched orders should contain one position");
+        Assertions.assertEquals(100, matchResult.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+                "Matched orders should have 100% match");
+        OverallMatchResult matchResultOther = matchingService.getMatchedPositions("user456");
+        System.out.println("Matched orders: " + matchResultOther.getMatchedPositions());
+        Assertions.assertNotNull(matchResultOther, "Match result should not be null");
+        Assertions.assertEquals(100, matchResultOther.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+                "Matched orders should have 100% match");
+        
     }
 
     @Test
@@ -74,7 +82,16 @@ public class MatchingServiceTest {
         Assertions.assertNotNull(matchResult, "Match result should not be null");
         Assertions.assertEquals(1, matchResult.getMatchedPositions().size(), "Matched orders should contain one position");
         Assertions.assertNotNull(matchResultOther, "Match result should not be null");
-        Assertions.assertEquals(1, matchResultOther.getMatchedPositions().size(), "Matched orders should contain one position");
+
+        Assertions.assertEquals(100, matchResultOther.getMatchedPositions().get(0).getMatchedPositionAsPercentage(), 
+                "Matched " +
+                "orders should have 100% match");
+        Assertions.assertEquals(70,
+                matchResult.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+                "Matched " +
+                        "orders shouldhave 70%");
+
+
     }
 
     @Test
@@ -104,16 +121,26 @@ public class MatchingServiceTest {
         System.out.println("Matched orders: " + matchResult.getMatchedPositions());
         Assertions.assertEquals(3, matchResult.getMatchedPositions().size(), "Matched orders " +
                 "should contain two positions");
+        Assertions.assertEquals(0,
+                matchResult.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+                "Matched orders should have 70% match for EURUSD");
+        Assertions.assertEquals(80,
+                matchResult.getMatchedPositions().get(1).getMatchedPositionAsPercentage(),
+                "Matched orders should have 100% match for USDJPY");
+        Assertions.assertEquals(70,
+                matchResult.getMatchedPositions().get(2).getMatchedPositionAsPercentage(),
+                "Matched orders should have 100% match for AUDUSD");
+        
 
         OverallMatchResult matchResultOther = matchingService.getMatchedPositions("user456");
         System.out.println("Matched orders: " + matchResultOther.getMatchedPositions());
         Assertions.assertEquals(2, matchResultOther.getMatchedPositions().size(), "Matched orders should contain two positions");
-
-
-        // Check that the matched positions are as expected
-        Assertions.assertNotNull(matchResult, "Match result should not be null");
-        Assertions.assertEquals(3, matchResult.getMatchedPositions().size(), "Matched orders " +
-                "should contain TWO positions");
+        Assertions.assertEquals(100, matchResultOther.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+                "Matched orders should have 100% match for EURUSD");
+        Assertions.assertEquals(100,
+                matchResultOther.getMatchedPositions().get(1).getMatchedPositionAsPercentage(),
+                "Matched orders should have 80% match for USDJPY");
+        
     }
 
     @Test
