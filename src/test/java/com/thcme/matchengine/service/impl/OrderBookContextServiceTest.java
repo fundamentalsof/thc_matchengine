@@ -56,7 +56,7 @@ public class OrderBookContextServiceTest {
         
 
         OrderBookContext  context  = orderBookContextService.getOrderBookContext(orderKey);
-        context.getBuyMapOfUserIdsToAggregatedOrders().put("User 1", 
+        context.pushOrder( 
                 new Order("EURUSD", 
             "USD",
                 Order.Direction.BUY, 10.0d, 20200101, "User 1"));
@@ -74,7 +74,7 @@ public class OrderBookContextServiceTest {
 
 
         OrderBookContext  context  = orderBookContextService.getOrderBookContext(orderKey);
-        context.getBuyMapOfUserIdsToAggregatedOrders().put("User 1",
+        context.pushOrder(
                 new Order("EURUSD",
                         "USD",
                         Order.Direction.BUY, 10.0d, 20200101, "User 1"));
@@ -92,12 +92,12 @@ public class OrderBookContextServiceTest {
 
 
         OrderBookContext  context  = orderBookContextService.getOrderBookContext(orderKey);
-        context.getBuyMapOfUserIdsToAggregatedOrders().put("User 1",
+        context.pushOrder(
                 new Order("EURUSD",
                         "USD",
                         Order.Direction.BUY, 10.0d, 20200101, "User 1"));
 
-        context.getSellMapOfUserIdsToAggregatedOrders().put("User 1",
+        context.pushOrder(
                 new Order("EURUSD",
                         "USD",
                         Order.Direction.SELL, 10.0d, 20200101, "User 1"));

@@ -7,7 +7,6 @@ import com.thcme.matchengine.service.interfaces.IOrderSubmissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 
 @Service
@@ -24,133 +23,98 @@ public class OrderSubmissionService implements IOrderSubmissionService {
 
     private Order addOrderInternal(final Order order, OrderBookContext orderBookContext) {
         synchronized (orderBookContext) {
-            if (order.getDirection() == Order.Direction.BUY) {
-                return doBuySideLogic(order, orderBookContext);
-            } else { //sell
-                return doSellSideLogic(order, orderBookContext);
-            }
+            return doAddOrderLogic(order, orderBookContext);
         }
     }
 
     public void reset(){
         orderBookContextService.reset();
     }
-
-
-    private Order doSellSideLogic(final Order order, OrderBookContext orderBookContext) {
+    
+    private Order doAddOrderLogic(final Order order, OrderBookContext orderBookContext) {
         Order aggregatedOrder;
-        final Map<String, Order> sellMapOfUserIdsToAggregatedOrders =
-                    orderBookContext.getSellMapOfUserIdsToAggregatedOrders();
-        final Map<String, Order> buyMapOfUserIdsToAggregatedOrders =
+        Order.Direction orderDirection = order.getDirection();
+        Order.Direction otherDirection = orderDirection == Order.Direction.BUY ?
+                Order.Direction.SELL : Order.Direction.BUY;
+        
+        final Map<String, Order> mySideMapOfUserIdsToAggregatedOrders =
+                order.getDirection() == Order.Direction.SELL ?
+                orderBookContext.getSellMapOfUserIdsToAggregatedOrders():
                 orderBookContext.getBuyMapOfUserIdsToAggregatedOrders();
-        Order existingOrder = sellMapOfUserIdsToAggregatedOrders.get(order.getUserId());
-        Order existingOppositeOrder = buyMapOfUserIdsToAggregatedOrders.get(order.getUserId());
+        final Map<String, Order> otherSideMapOfUserIdsToAggregatedOrders =
+                order.getDirection() == Order.Direction.SELL ?
+                orderBookContext.getBuyMapOfUserIdsToAggregatedOrders() :
+                        orderBookContext.getSellMapOfUserIdsToAggregatedOrders();
+        Order existingOrder = mySideMapOfUserIdsToAggregatedOrders.get(order.getUserId());
+        Order existingOppositeOrder = otherSideMapOfUserIdsToAggregatedOrders.get(order.getUserId());
         if(existingOrder == null && existingOppositeOrder == null) {
             // no existing order
-            aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                    Order.Direction.SELL,
-                    order.getAmount(), order.getValueDate(),
-                    order.getUserId());
-            sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-            orderBookContext.pushSellOrder(aggregatedOrder);
+            aggregatedOrder = createAggregatedOrder(order, orderDirection,
+                    order.getAmount());
+            pushNewOrder.call(orderDirection, aggregatedOrder, orderBookContext);
         }
         else if (existingOrder != null) {
             // existing order, Aggregate SELLS
-            aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                    Order.Direction.SELL,
-                    existingOrder.getAmount() + order.getAmount(), order.getValueDate(),
-                    order.getUserId());
-            sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-            orderBookContext.pushSellOrder(aggregatedOrder);
+            aggregatedOrder = createAggregatedOrder(order, orderDirection,
+                    existingOrder.getAmount() + order.getAmount());
+            pushAggregatedOrder.call(orderDirection, aggregatedOrder, orderBookContext);
         }
         else { //existingOppositeOrder != null, Aggregate SELL and BUY, see the result and 
             // shift sides if needed
             double amount =  existingOppositeOrder.getAmount() - order.getAmount();
-            if (amount < 0) { //Shift sides
+            if (amount < 0) { //Shift sides from existing Opposite Side to SELL
                 amount = -amount;
-                buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
-                orderBookContext.removeBuyOrder(existingOppositeOrder);
-                aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                        Order.Direction.SELL,
-                        amount, order.getValueDate(),
-                        order.getUserId());
-                sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-                orderBookContext.pushSellOrder(aggregatedOrder);
+                aggregatedOrder = createAggregatedOrder(order, orderDirection, amount);
+                pushOrderAndRemoveFromOtherSide.call(orderDirection, aggregatedOrder,
+                        orderBookContext);
             }
             else { // amount >= 0, We stick to buy side as it had a greater amount
-                aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                        Order.Direction.BUY,
-                        amount, order.getValueDate(),
-                        order.getUserId());
+                aggregatedOrder = createAggregatedOrder(order, otherDirection, amount);
                 if (amount == 0) {
-                    buyMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
-                    orderBookContext.removeBuyOrder(existingOppositeOrder);
+                    //Special case ..Zero result
+                    removeOrder(existingOppositeOrder, orderBookContext);
                 } else {
-                    buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-                    orderBookContext.pushBuyOrder(aggregatedOrder);
+                    //We stick to existing Order's side with reduced amount 
+                    pushAggregatedReducedOrder.call(otherDirection, aggregatedOrder,
+                            orderBookContext);
                 }
             }
         }
         return aggregatedOrder;
     }
 
-    private Order doBuySideLogic(final Order order, OrderBookContext orderBookContext) {
-        Order aggregatedOrder;
-        final Map<String, Order> sellMapOfUserIdsToAggregatedOrders =
-                orderBookContext.getSellMapOfUserIdsToAggregatedOrders();
-        final Map<String, Order> buyMapOfUserIdsToAggregatedOrders =
-                orderBookContext.getBuyMapOfUserIdsToAggregatedOrders();
+    // OrderPusher is used to push new orders to the order book context
+    @FunctionalInterface
+    private interface OrderPusher {
+        void call(final Order.Direction direction, final Order order,
+                       final OrderBookContext orderBookContext);
+    }
+    private final OrderPusher pushNewOrder = (direction, order, orderBookContext) -> {
+        orderBookContext.pushOrder(order);
+    };
+    private final OrderPusher pushAggregatedOrder = pushNewOrder;
+    private final OrderPusher pushAggregatedReducedOrder = pushNewOrder;
 
-        Order existingOrder = buyMapOfUserIdsToAggregatedOrders.get(order.getUserId());
-        Order existingOppositeOrder = sellMapOfUserIdsToAggregatedOrders.get(order.getUserId());
-        if (existingOrder == null && existingOppositeOrder == null) {
-            // no existing order
-            aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                    Order.Direction.BUY,
-                    order.getAmount(), order.getValueDate(),
-                    order.getUserId());
-            buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-            orderBookContext.pushBuyOrder(aggregatedOrder);
-            
-            return aggregatedOrder;
-        }
-        else if (existingOrder != null) {
-            // existing order, Aggregate BUYs
-            aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                    Order.Direction.BUY,
-                    existingOrder.getAmount() + order.getAmount(), order.getValueDate(),
-                    order.getUserId());
-            buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-            orderBookContext.pushBuyOrder(aggregatedOrder);
-        } else { //existingOppositeOrder != null, Aggregate BUY and SELL, see the result and 
-            // shift sides if needed
-            double amount =   existingOppositeOrder.getAmount() - order.getAmount();
-            if (amount < 0) { //Shift sides to SELL
-                amount = -amount;
-                sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
-                orderBookContext.removeSellOrder(existingOppositeOrder);
-                aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                        Order.Direction.BUY,
-                        amount, order.getValueDate(),
-                        order.getUserId());
-                buyMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-                orderBookContext.pushBuyOrder(aggregatedOrder);
-            }
-            else { // amount >= 0, We stick to Sell  side as it had a greater amount
-                aggregatedOrder = new Order(order.getCurrencyPair(), order.getDealtCurrency(),
-                        Order.Direction.SELL,
-                        amount, order.getValueDate(),
-                        order.getUserId());
-                if (amount == 0) {
-                    sellMapOfUserIdsToAggregatedOrders.remove(order.getUserId());
-                    orderBookContext.removeSellOrder(existingOppositeOrder);
-                } else {
-                    sellMapOfUserIdsToAggregatedOrders.put(order.getUserId(), aggregatedOrder);
-                    orderBookContext.pushSellOrder(aggregatedOrder);
-                }
-            }
-        }
-        return aggregatedOrder;
+
+    @FunctionalInterface
+    private interface OrderPusherAndRemover {
+        Order call(final Order.Direction direction, final Order order,
+                   final OrderBookContext orderBookContext);
+    }
+    private final OrderPusherAndRemover pushOrderAndRemoveFromOtherSide = (direction, order,
+                                                               orderBookContext) -> {
+        orderBookContext.removeOrderFromOtherSide(order);
+        orderBookContext.pushOrder(order);
+        return order;
+    };
+    
+    private void removeOrder(final Order order, OrderBookContext orderBookContext) {
+        orderBookContext.removeOrder(order);
     }
     
+    private Order createAggregatedOrder(final Order order, Order.Direction direction,
+                                        double amount) {
+        return new Order(order.getCurrencyPair(), order.getDealtCurrency(),
+                direction, amount, order.getValueDate(),order.getUserId());
+    }
 }
