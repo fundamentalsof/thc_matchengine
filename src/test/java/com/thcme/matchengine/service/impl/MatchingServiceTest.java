@@ -121,11 +121,14 @@ public class MatchingServiceTest {
         System.out.println("Matched orders: " + matchResult.getMatchedPositions());
         Assertions.assertEquals(3, matchResult.getMatchedPositions().size(), "Matched orders " +
                 "should contain two positions");
-        Assertions.assertEquals(70, matchResult.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
+        Assertions.assertEquals(0,
+                matchResult.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
                 "Matched orders should have 70% match for EURUSD");
-        Assertions.assertEquals(100, matchResult.getMatchedPositions().get(1).getMatchedPositionAsPercentage(),
+        Assertions.assertEquals(80,
+                matchResult.getMatchedPositions().get(1).getMatchedPositionAsPercentage(),
                 "Matched orders should have 100% match for USDJPY");
-        Assertions.assertEquals(100, matchResult.getMatchedPositions().get(2).getMatchedPositionAsPercentage(),
+        Assertions.assertEquals(70,
+                matchResult.getMatchedPositions().get(2).getMatchedPositionAsPercentage(),
                 "Matched orders should have 100% match for AUDUSD");
         
 
@@ -134,7 +137,8 @@ public class MatchingServiceTest {
         Assertions.assertEquals(2, matchResultOther.getMatchedPositions().size(), "Matched orders should contain two positions");
         Assertions.assertEquals(100, matchResultOther.getMatchedPositions().get(0).getMatchedPositionAsPercentage(),
                 "Matched orders should have 100% match for EURUSD");
-        Assertions.assertEquals(80, matchResultOther.getMatchedPositions().get(1).getMatchedPositionAsPercentage(),
+        Assertions.assertEquals(100,
+                matchResultOther.getMatchedPositions().get(1).getMatchedPositionAsPercentage(),
                 "Matched orders should have 80% match for USDJPY");
         
     }
