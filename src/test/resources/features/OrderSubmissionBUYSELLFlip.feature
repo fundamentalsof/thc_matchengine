@@ -1,4 +1,4 @@
-Feature: Order Submission
+Feature: Order Submission Buy SEll Flip
 
   Scenario: Submit a BUY order
     Given an order with direction BUY, amount 1000.0, and user "user123"

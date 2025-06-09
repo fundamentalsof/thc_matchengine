@@ -1,4 +1,4 @@
-Feature: Order Submission
+Feature: Order Submission Sell
 
   Scenario: Submit a SELL order
 Given an order with direction SELL, amount 1000.0, and user "user123"
