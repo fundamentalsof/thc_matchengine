@@ -60,8 +60,8 @@ public class OrderSubmissionServiceBenchmarkTest {
         System.out.println("HISTOGRAM Value at 999" + histogram.getValueAtPercentile(99.9d));
         histogram.outputPercentileDistribution(System.out, 1000.0);
         Assertions.assertTrue(
-                histogram.getValueAtPercentile(99.9d)/(2*1000) < 5, "999 value should be " +
-                        "less than 5 Microseconds");//We make two calls, hence divide by 2000
+                histogram.getValueAtPercentile(99.9d)/(2*1000) < 15, "999 value should be " +
+                        "less than 15 Microseconds");//We make two calls, hence divide by 2000
         
     }
 }

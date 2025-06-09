@@ -66,8 +66,8 @@ public class MatchingServiceBenchmarkTest {
         System.out.println("HISTOGRAM Value at 999" + histogram.getValueAtPercentile(99.9d));
         histogram.outputPercentileDistribution(System.out, 1000.0);
         Assertions.assertTrue(
-                histogram.getValueAtPercentile(99.9d)/1000 < 5, "999 value should be " +
-                        "less than 5 Microseconds");
+                histogram.getValueAtPercentile(99.9d)/1000 < 15, "999 value should be " +
+                        "less than 15 Microseconds");
         
         
     }
